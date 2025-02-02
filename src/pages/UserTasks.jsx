@@ -1,40 +1,51 @@
-import React, { useState, useEffect } from 'react'
-import UserTaskForm from '../components/UserTaskForm'
-
+import React, { useState, useEffect } from 'react';
+import UserTaskForm from '../components/UserTaskForm';
 
 const UserTask = () => {
-  const [userTasks, setUserTasks] = useState([])
+  const [userTasks, setUserTasks] = useState([]);
 
   useEffect(() => {
-    fetch('/user-task')
+    fetch('http://127.0.0.1:5000/user_task')
       .then((response) => response.json())
       .then((data) => setUserTasks(data))
-      .catch((error) => console.error('Error fetching user tasks:', error))
-  }, [])
+      .catch((error) => console.error('Error fetching user tasks:', error));
+  }, []);
 
   const handleUserTaskAdd = (userTask) => {
-    setUserTasks([...userTasks, userTask])
-  }
+    setUserTasks([...userTasks, userTask]);
+  };
 
-  const handleUserTaskDelete = (userTask) => {
-    setUserTasks(userTasks.filter((task) => task.id !== userTask.id))
-  }
+  const handleUserTaskDelete = (id) => {
+    setUserTasks(userTasks.filter((task) => task.id !== id));
+  };
+
+  const handleUserTaskEdit = (updatedTask) => {
+    setUserTasks(
+      userTasks.map((task) =>
+        task.id === updatedTask.id ? { ...task, updatedTask } : task
+      )
+    );
+  };
 
   return (
     <div>
       <h2>Manage User Tasks</h2>
-      <UserTaskForm onUserTaskAdd={handleUserTaskAdd} onUserTaskDelete={handleUserTaskDelete} />
+      <UserTaskForm
+        onUserTaskAdd={handleUserTaskAdd}
+        onUserTaskDelete={handleUserTaskDelete}
+        onUserTaskEdit={handleUserTaskEdit}
+      />
       <h3>User Tasks</h3>
       <ul>
         {userTasks.map((userTask) => (
           <li key={userTask.id}>
-            User ID: {userTask.userId}, Project ID: {userTask.projectId}, Role: {userTask.role}
-            <button onClick={() => handleUserTaskDelete(userTask)}>Delete</button>
+            User ID: {userTask.user_id}, Project ID: {userTask.project_id}, Role: {userTask.role}
+            <button onClick={() => handleUserTaskDelete(userTask.id)}>Delete</button>
           </li>
         ))}
       </ul>
     </div>
-  )
-}
+  );
+};
 
 export default UserTask;

@@ -1,52 +1,33 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react';
 
 const UserForm = ({ onUserAdd }) => {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [userId, setUserId] = useState('')
-  const [error, setError] = useState('')
-  const [users, setUsers] = useState([])
-
-  useEffect(() => {
-    fetch('/user')
-      .then((response) => response.json())
-      .then((data) => setUsers(data))
-      .catch((error) => console.error('Error fetching users:', error))
-  }, [])
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!username || !email) {
-      setError('Both username and email are required.')
-      return
+      setError('Both username and email are required.');
+      return;
     }
-    setError('')
+    setError('');
 
-    const userData = { username, email }
+    const userData = { username, email };
 
-    fetch('/user', {
+    fetch('http://127.0.0.1:5000/user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     })
       .then((response) => response.json())
       .then((data) => {
-        onUserAdd(data)
-        setUsername('')
+        onUserAdd(data); // Call the parent function to add the new user
+        setUsername('');
         setEmail('');
-        setUsers([...users, data])
       })
-      .catch((error) => setError('Error creating user: ' + error.message))
-  }
-
-  const handleDelete = (id) => {
-    fetch(`/user/${id}`, { method: 'DELETE' })
-      .then((response) => response.json())
-      .then(() => {
-        setUsers(users.filter((user) => user.id !== id))
-      })
-      .catch((error) => console.error('Error deleting user:', error))
-  }
+      .catch((error) => setError('Error creating user: ' + error.message));
+  };
 
   return (
     <div>
@@ -75,18 +56,8 @@ const UserForm = ({ onUserAdd }) => {
         </div>
         <button type="submit">Create User</button>
       </form>
-
-      <h3>Existing Users</h3>
-      <ul>
-        {users.map((user) => (
-          <li key={user.id}>
-            {user.username} ({user.email})
-            <button onClick={() => handleDelete(user.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
     </div>
-  )
-}
+  );
+};
 
 export default UserForm;

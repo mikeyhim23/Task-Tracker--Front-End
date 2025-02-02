@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const UserTaskForm = ({ onUserTaskAdd, onUserTaskDelete }) => {
+const UserTaskForm = ({ onUserTaskAdd, onUserTaskEdit, onUserTaskDelete }) => {
   const [userTaskId, setUserTaskId] = useState('');
   const [userId, setUserId] = useState('');
   const [projectId, setProjectId] = useState('');
@@ -8,8 +8,9 @@ const UserTaskForm = ({ onUserTaskAdd, onUserTaskDelete }) => {
   const [error, setError] = useState('');
   const [userTasks, setUserTasks] = useState([]);
 
+  // Fetch user tasks from the backend
   useEffect(() => {
-    fetch('/user-task')
+    fetch('http://127.0.0.1:5000/user_task')
       .then((response) => response.json())
       .then((data) => setUserTasks(data))
       .catch((error) => console.error('Error fetching user tasks:', error));
@@ -17,37 +18,71 @@ const UserTaskForm = ({ onUserTaskAdd, onUserTaskDelete }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newUserTask = { userId, projectId, role };
 
-    fetch('/user-task', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newUserTask),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        onUserTaskAdd(data);
-        setUserId('');
-        setProjectId('');
-        setRole('');
-        setUserTasks([...userTasks, data])
+    if (!userId || !projectId || !role) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    const newUserTask = { user_id: userId, project_id: projectId, role };
+
+    // If we're editing an existing task (userTaskId is not empty), update it
+    if (userTaskId) {
+      fetch(`http://127.0.0.1:5000/user_task/${userTaskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUserTask),
       })
-      .catch((error) => setError('Error adding user task: ' + error.message))
-  }
+        .then((response) => response.json())
+        .then((data) => {
+          onUserTaskEdit(data);  // Pass the updated task to the parent component
+          setUserTaskId('');
+          setUserId('');
+          setProjectId('');
+          setRole('');
+        })
+        .catch((error) => setError('Error updating user task: ' + error.message));
+    } else {
+      // If we're adding a new task, do a POST request
+      fetch('http://127.0.0.1:5000/user_task', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUserTask),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          onUserTaskAdd(data);  // Pass the newly added task to the parent component
+          setUserId('');
+          setProjectId('');
+          setRole('');
+        })
+        .catch((error) => setError('Error adding user task: ' + error.message));
+    }
+  };
 
   const handleDelete = (id) => {
-    fetch(`/user-task/${id}`, { method: 'DELETE' })
+    fetch(`http://127.0.0.1:5000/user_task/${id}`, { method: 'DELETE' })
       .then((response) => response.json())
       .then(() => {
-        onUserTaskDelete(id);
-        setUserTasks(userTasks.filter((task) => task.id !== id))
+        onUserTaskDelete(id);  // Parent component deletes from the state
       })
-      .catch((error) => console.error('Error deleting user task:', error))
-  }
+      .catch((error) => {
+        console.error('Error deleting user task:', error);
+        setError('Error deleting user task: ' + error.message);
+      });
+  };
+
+  const handleEdit = (task) => {
+    // Pre-fill the form with the task data
+    setUserTaskId(task.id);
+    setUserId(task.user_id);
+    setProjectId(task.project_id);
+    setRole(task.role);
+  };
 
   return (
     <div>
-      <h2>User Task Form</h2>
+      <h2>{userTaskId ? 'Edit' : 'Assign'} User Task</h2>
       {error && <div style={{ color: 'red' }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
@@ -77,20 +112,21 @@ const UserTaskForm = ({ onUserTaskAdd, onUserTaskDelete }) => {
             onChange={(e) => setRole(e.target.value)}
           />
         </div>
-        <button type="submit">Assign Task</button>
+        <button type="submit">{userTaskId ? 'Update Task' : 'Assign Task'}</button>
       </form>
 
       <h3>Existing User Tasks</h3>
       <ul>
         {userTasks.map((task) => (
           <li key={task.id}>
-            User ID: {task.userId}, Project ID: {task.projectId}, Role: {task.role}
+            User ID: {task.user_id}, Project ID: {task.project_id}, Role: {task.role}
+            <button onClick={() => handleEdit(task)}>Edit</button>
             <button onClick={() => handleDelete(task.id)}>Delete</button>
           </li>
         ))}
       </ul>
     </div>
-  )
-}
+  );
+};
 
-export default UserTaskForm
+export default UserTaskForm;
