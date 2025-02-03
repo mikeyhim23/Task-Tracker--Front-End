@@ -15,19 +15,19 @@ const UserForm = ({ onUserAdd }) => {
 
     const userData = { username, email };
 
-    fetch('http://127.0.0.1:5000/user', {
+    fetch('https://task-project-ci1o.onrender.com/user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     })
       .then((response) => response.json())
       .then((data) => {
-        onUserAdd(data); // Call the parent function to add the new user
-        setUsername('');
-        setEmail('');
+        onUserAdd(data)
+        setUsername('')
+        setEmail('')
       })
-      .catch((error) => setError('Error creating user: ' + error.message));
-  };
+      .catch((error) => setError('Error creating user: ' + error.message))
+  }
 
   return (
     <div>

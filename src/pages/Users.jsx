@@ -2,18 +2,16 @@ import React, { useState, useEffect } from 'react';
 import UserForm from '../components/UserForm';
 
 const User = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([])
 
   useEffect(() => {
-    // Fetch all users when the component loads
-    fetch('http://127.0.0.1:5000/user')
+    fetch('https://task-project-ci1o.onrender.com/user')
       .then((response) => response.json())
       .then((data) => setUsers(data))
-      .catch((error) => console.error('Error fetching users:', error));
-  }, []);
+      .catch((error) => console.error('Error fetching users:', error))
+  }, [])
 
   const handleUserAdd = (user) => {
-    // Add the newly created user to the list
     setUsers([...users, user]);
   };
 
@@ -30,7 +28,7 @@ const User = () => {
         ))}
       </ul>
     </div>
-  );
-};
+  )
+}
 
 export default User;

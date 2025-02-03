@@ -2,26 +2,26 @@ import React, { useState, useEffect } from 'react';
 import TaskForm from '../components/TaskForm';
 
 const Task = () => {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState([])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/task')  // Updated to use local API
+    fetch('https://task-project-ci1o.onrender.com/task') 
       .then((response) => response.json())
       .then((data) => setTasks(data))
-      .catch((error) => console.error('Error fetching tasks:', error));
-  }, []);
+      .catch((error) => console.error('Error fetching tasks:', error))
+  }, [])
 
   const handleTaskAdd = (task) => {
-    setTasks([...tasks, task]);
-  };
+    setTasks([...tasks, task])
+  }
 
   const handleTaskUpdate = (task) => {
-    setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
-  };
+    setTasks(tasks.map((t) => (t.id === task.id ? task : t)))
+  }
 
   const handleTaskDelete = (task) => {
-    setTasks(tasks.filter((t) => t.id !== task.id));
-  };
+    setTasks(tasks.filter((t) => t.id !== task.id))
+  }
 
   return (
     <div>
@@ -42,7 +42,7 @@ const Task = () => {
         ))}
       </ul>
     </div>
-  );
-};
+  )
+}
 
 export default Task;

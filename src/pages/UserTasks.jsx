@@ -2,30 +2,30 @@ import React, { useState, useEffect } from 'react';
 import UserTaskForm from '../components/UserTaskForm';
 
 const UserTask = () => {
-  const [userTasks, setUserTasks] = useState([]);
+  const [userTasks, setUserTasks] = useState([])
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/user_task')
+    fetch('https://task-project-ci1o.onrender.com/user_task')
       .then((response) => response.json())
       .then((data) => setUserTasks(data))
-      .catch((error) => console.error('Error fetching user tasks:', error));
-  }, []);
+      .catch((error) => console.error('Error fetching user tasks:', error))
+  }, [])
 
   const handleUserTaskAdd = (userTask) => {
-    setUserTasks([...userTasks, userTask]);
-  };
+    setUserTasks([...userTasks, userTask])
+  }
 
   const handleUserTaskDelete = (id) => {
-    setUserTasks(userTasks.filter((task) => task.id !== id));
-  };
+    setUserTasks(userTasks.filter((task) => task.id !== id))
+  }
 
   const handleUserTaskEdit = (updatedTask) => {
     setUserTasks(
       userTasks.map((task) =>
         task.id === updatedTask.id ? { ...task, updatedTask } : task
       )
-    );
-  };
+    )
+  }
 
   return (
     <div>

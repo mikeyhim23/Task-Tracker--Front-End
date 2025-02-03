@@ -17,7 +17,7 @@ const App = () => {
         <Route path="/user-tasks" element={<UserTasks />} />
       </Routes>
     </Router>
-  );
-};
+  )
+}
 
 export default App;

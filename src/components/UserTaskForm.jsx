@@ -8,72 +8,69 @@ const UserTaskForm = ({ onUserTaskAdd, onUserTaskEdit, onUserTaskDelete }) => {
   const [error, setError] = useState('');
   const [userTasks, setUserTasks] = useState([]);
 
-  // Fetch user tasks from the backend
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/user_task')
+    fetch('https://task-project-ci1o.onrender.com/user_task')
       .then((response) => response.json())
       .then((data) => setUserTasks(data))
-      .catch((error) => console.error('Error fetching user tasks:', error));
-  }, []);
+      .catch((error) => console.error('Error fetching user tasks:', error))
+  }, [])
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!userId || !projectId || !role) {
-      setError('Please fill in all fields');
-      return;
+      setError('Please fill in all fields')
+      return
     }
 
-    const newUserTask = { user_id: userId, project_id: projectId, role };
+    const newUserTask = { user_id: userId, project_id: projectId, role }
 
-    // If we're editing an existing task (userTaskId is not empty), update it
     if (userTaskId) {
-      fetch(`http://127.0.0.1:5000/user_task/${userTaskId}`, {
+      fetch(`https://task-project-ci1o.onrender.com/user_task/${userTaskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUserTask),
       })
         .then((response) => response.json())
         .then((data) => {
-          onUserTaskEdit(data);  // Pass the updated task to the parent component
-          setUserTaskId('');
-          setUserId('');
-          setProjectId('');
-          setRole('');
+          onUserTaskEdit(data)
+          setUserTaskId('')
+          setUserId('')
+          setProjectId('')
+          setRole('')
         })
-        .catch((error) => setError('Error updating user task: ' + error.message));
+        .catch((error) => setError('Error updating user task: ' + error.message))
     } else {
-      // If we're adding a new task, do a POST request
-      fetch('http://127.0.0.1:5000/user_task', {
+      fetch('https://task-project-ci1o.onrender.com/user_task', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUserTask),
       })
         .then((response) => response.json())
         .then((data) => {
-          onUserTaskAdd(data);  // Pass the newly added task to the parent component
-          setUserId('');
-          setProjectId('');
-          setRole('');
+          onUserTaskAdd(data)
+          setUserId('')
+          setProjectId('')
+          setRole('')
         })
-        .catch((error) => setError('Error adding user task: ' + error.message));
+        .catch((error) => setError('Error adding user task: ' + error.message))
     }
-  };
+  }
 
   const handleDelete = (id) => {
-    fetch(`http://127.0.0.1:5000/user_task/${id}`, { method: 'DELETE' })
+    fetch(`https://task-project-ci1o.onrender.com/user_task/${id}`, { method: 'DELETE' })
       .then((response) => response.json())
       .then(() => {
-        onUserTaskDelete(id);  // Parent component deletes from the state
+        onUserTaskDelete(id)
       })
       .catch((error) => {
-        console.error('Error deleting user task:', error);
-        setError('Error deleting user task: ' + error.message);
-      });
-  };
+        console.error('Error deleting user task:', error)
+        setError('Error deleting user task: ' + error.message)
+      })
+  }
 
   const handleEdit = (task) => {
-    // Pre-fill the form with the task data
+    // Pre-fill the form
     setUserTaskId(task.id);
     setUserId(task.user_id);
     setProjectId(task.project_id);
@@ -83,7 +80,7 @@ const UserTaskForm = ({ onUserTaskAdd, onUserTaskEdit, onUserTaskDelete }) => {
   return (
     <div>
       <h2>{userTaskId ? 'Edit' : 'Assign'} User Task</h2>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {error && <div styleKKK={{ color: 'red' }}>{error}</div>}
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="userId">User ID</label>
@@ -126,7 +123,7 @@ const UserTaskForm = ({ onUserTaskAdd, onUserTaskEdit, onUserTaskDelete }) => {
         ))}
       </ul>
     </div>
-  );
-};
+  )
+}
 
 export default UserTaskForm;

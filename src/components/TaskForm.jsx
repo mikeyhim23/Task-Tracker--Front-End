@@ -1,84 +1,153 @@
 import React, { useState, useEffect } from 'react';
 
-const TaskForm = ({ onTaskAdd, onTaskUpdate, onTaskDelete }) => {
+const TaskForm = () => {
   const [taskId, setTaskId] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('pending');
   const [tasks, setTasks] = useState([]);
+  const [error, setError] = useState(null);
+  
+  // Hardcoded user_id since it's required by the backend
+  const USER_ID = 1; 
 
-  // Fetching tasks when the component is mounted
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/task')  // Updated to use local API
-      .then((response) => response.json())
-      .then((data) => setTasks(data))
-      .catch((error) => console.error('Error fetching tasks:', error));
-  }, []);
+    fetchTasks();
+  }, [])
 
-  // Handle the form submission to add a new task
+  const fetchTasks = () => {
+    fetch('https://task-project-ci1o.onrender.com/task')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch tasks');
+        }
+        return response.json();
+      })
+      .then((data) => setTasks(data))
+      .catch((error) => {
+        console.error('Error fetching tasks:', error);
+        setError('Failed to load tasks');
+      });
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newTask = { title, description, status };
+    setError(null);
 
-    fetch('http://127.0.0.1:5000/task', {  // Updated to use local API
+    // Validate inputs
+    if (!title.trim() || !description.trim()) {
+      setError('Title and description cannot be empty');
+      return;
+    }
+    if (taskId) {
+      handleUpdate(taskId);
+    } else {
+      handleAdd();
+    }
+  }
+
+  const handleAdd = () => {
+    const newTask = { 
+      title, 
+      description, 
+      status, 
+      user_id: USER_ID 
+    }
+
+    fetch('https://task-project-ci1o.onrender.com/task', {  
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(newTask),
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          return response.json().then(errorData => {
+            throw new Error(errorData.message || 'Failed to add task');
+          });
         }
         return response.json();
       })
       .then((data) => {
-        onTaskAdd(data);
-        setTitle(''); // Reset form
+        // Update local state
+        setTasks([...tasks, data]);
+        
+        // Reset form
+        setTitle('');
         setDescription('');
         setStatus('pending');
-        setTasks([...tasks, data]);  // Update task list
       })
-      .catch((error) => console.error('Error adding task:', error));
-  };
+      .catch((error) => {
+        console.error('Error adding task:', error);
+        setError(error.message || 'Failed to add task');
+      });
+  }
 
-  // Handle task deletion
-  const handleDelete = (id) => {
-    fetch(`http://127.0.0.1:5000/task/${id}`, { method: 'DELETE' })  // Updated to use local API
+  const handleUpdate = (id) => {
+    const updatedTask = { 
+      title, 
+      description, 
+      status, 
+      user_id: USER_ID 
+    };
+
+    fetch(`https://task-project-ci1o.onrender.com/task/${id}`, {  
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedTask),
+    })
       .then((response) => {
         if (!response.ok) {
-          throw new Error('Failed to delete task');
+          return response.json().then(errorData => {
+            throw new Error(errorData.message || 'Failed to update task');
+          });
         }
         return response.json();
       })
-      .then(() => {
-        setTasks(tasks.filter((task) => task.id !== id));  // Remove task from state
-      })
-      .catch((error) => console.error('Error deleting task:', error));
-  };
-
-  // Handle task update (edit)
-  const handleUpdate = (id) => {
-    const updatedTask = { title, description, status };
-
-    fetch(`http://127.0.0.1:5000/task/${id}`, {  // Updated to use local API
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedTask),
-    })
-      .then((response) => response.json())
       .then((data) => {
-        onTaskUpdate(data);
-        setTasks(tasks.map((task) => (task.id === id ? data : task)));
-        // Clear the form after update
+        // Update tasks array
+        const updatedTasks = tasks.map((task) => 
+          task.id === id ? data : task
+        );
+        
+        setTasks(updatedTasks);
+        
+        // Reset form
         setTaskId('');
         setTitle('');
         setDescription('');
         setStatus('pending');
       })
-      .catch((error) => console.error('Error updating task:', error));
+      .catch((error) => {
+        console.error('Error updating task:', error);
+        setError(error.message || 'Failed to update task');
+      });
+  }
+
+  const handleDelete = (id) => {
+    fetch(`https://task-project-ci1o.onrender.com/task/${id}`, { 
+      method: 'DELETE' 
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error(errorData.message || 'Failed to delete task');
+          });
+        }
+        return response.json();
+      })
+      .then(() => {
+        setTasks(tasks.filter((task) => task.id !== id))
+      })
+      .catch((error) => {
+        console.error('Error deleting task:', error);
+        setError(error.message || 'Failed to delete task');
+      });
   };
 
-  // Pre-fill form for editing a task
   const handleEdit = (task) => {
     setTaskId(task.id);
     setTitle(task.title);
@@ -88,6 +157,8 @@ const TaskForm = ({ onTaskAdd, onTaskUpdate, onTaskDelete }) => {
 
   return (
     <div>
+      {error && <div style={{color: 'red'}}>{error}</div>}
+      
       <h2>{taskId ? 'Edit Task' : 'Add Task'}</h2>
       <form onSubmit={handleSubmit}>
         <div>
@@ -97,6 +168,7 @@ const TaskForm = ({ onTaskAdd, onTaskUpdate, onTaskDelete }) => {
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            required
           />
         </div>
         <div>
@@ -105,6 +177,7 @@ const TaskForm = ({ onTaskAdd, onTaskUpdate, onTaskDelete }) => {
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            required
           />
         </div>
         <div>
@@ -120,6 +193,18 @@ const TaskForm = ({ onTaskAdd, onTaskUpdate, onTaskDelete }) => {
           </select>
         </div>
         <button type="submit">{taskId ? 'Update Task' : 'Add Task'}</button>
+        {taskId && (
+          <button 
+            type="button" 
+            onClick={() => {
+              setTaskId('');
+              setTitle('');
+              setDescription('');
+              setStatus('pending');
+            }}
+          >
+          </button>
+        )}
       </form>
 
       <h3>Existing Tasks</h3>

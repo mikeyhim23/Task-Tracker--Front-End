@@ -24,23 +24,23 @@ const ProjectForm = ({ onProjectSave, existingProject }) => {
 
     if (existingProject) {
       // Update existing project
-      fetch(`http://127.0.0.1:5000/project/${existingProject.id}`, {
+      fetch(`https://task-project-ci1o.onrender.com/project/${existingProject.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(projectData),
       })
         .then((response) => response.json())
-        .then(onProjectSave)  // Pass the updated project back to the parent
+        .then(onProjectSave)  
         .catch((error) => console.error('Error updating project:', error))
     } else {
       // Add new project
-      fetch('http://127.0.0.1:5000/project', {
+      fetch('https://task-project-ci1o.onrender.com/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(projectData),
       })
         .then((response) => response.json())
-        .then(onProjectSave)  // Pass the newly created project back to the parent
+        .then(onProjectSave) 
         .catch((error) => console.error('Error adding project:', error))
     }
   }

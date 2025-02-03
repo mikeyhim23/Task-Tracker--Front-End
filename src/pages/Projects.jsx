@@ -6,7 +6,7 @@ const Project = () => {
   const [editingProject, setEditingProject] = useState(null)
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/project')
+    fetch('https://task-project-ci1o.onrender.com/project')
       .then((response) => response.json())
       .then((data) => setProjects(data))
       .catch((error) => console.error('Error fetching projects:', error))
@@ -24,14 +24,13 @@ const Project = () => {
   }
 
   const handleDelete = (id) => {
-    // Delete a project by its id
-    fetch(`http://127.0.0.1:5000/project/${id}`, { method: 'DELETE' })
+    // Delete a project 
+    fetch(`https://task-project-ci1o.onrender.com/project/${id}`, { method: 'DELETE' })
       .then(() => setProjects(projects.filter((project) => project.id !== id)))
       .catch((error) => console.error('Error deleting project:', error))
   }
 
   const handleEdit = (project) => {
-    // Set the selected project for editing
     setEditingProject(project)
   }
 
